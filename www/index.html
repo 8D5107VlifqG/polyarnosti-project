@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0c1526">
+<title>Тренажёр полярностей</title>
+
+<style>
+@font-face { font-family: "Golos Text"; font-style: normal; font-weight: 400 900; font-display: swap; src: url(fonts/golos-text-cyrillic-wght-normal.woff2) format("woff2-variations"); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+@font-face { font-family: "Golos Text"; font-style: normal; font-weight: 400 900; font-display: swap; src: url(fonts/golos-text-latin-wght-normal.woff2) format("woff2-variations"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Literata"; font-style: normal; font-weight: 200 900; font-display: swap; src: url(fonts/literata-cyrillic-wght-normal.woff2) format("woff2-variations"); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+@font-face { font-family: "Literata"; font-style: normal; font-weight: 200 900; font-display: swap; src: url(fonts/literata-latin-wght-normal.woff2) format("woff2-variations"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+:root {
+  --bg: #e8eff9;
+  --bg2: #d3e3fa;
+  --surface: #f6f9fe;
+  --ink: #11213a;
+  --muted: #5d7391;
+  --line: #c3d2e6;
+  --accent: #2a6fd6;
+  --accent-ink: #ffffff;
+  --glow: rgba(42, 111, 214, .35);
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1526;
+    --bg2: #16305c;
+    --surface: #14233b;
+    --ink: #e3ecf8;
+    --muted: #8ea3bf;
+    --line: #243652;
+    --accent: #6aaeff;
+    --accent-ink: #071427;
+    --glow: rgba(106, 174, 255, .45);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1526;
+  --bg2: #16305c;
+  --surface: #14233b;
+  --ink: #e3ecf8;
+  --muted: #8ea3bf;
+  --line: #243652;
+  --accent: #6aaeff;
+  --accent-ink: #071427;
+  --glow: rgba(106, 174, 255, .45);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg);
+  background-image: radial-gradient(90% 50% at 50% -8%, var(--bg2), transparent 72%);
+  background-repeat: no-repeat;
+  color: var(--ink);
+  font-family: "Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+button { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.top button {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font: inherit;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.progress { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 6px; }
+.progress > i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s ease; }
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  text-align: center;
+  padding: 8px 0 124px;
+  min-height: 0;
+  overflow-y: auto;
+}
+.polarity {
+  margin: 0;
+  font-family: "Literata", Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  font-size: clamp(28px, 7.4vw, 46px);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+.polarity .sep { color: var(--muted); font-weight: 400; }
+
+.counter {
+  position: relative;
+  width: min(56vw, 27vh, 220px);
+  aspect-ratio: 1;
+  flex: none;
+}
+.counter svg { width: 100%; height: 100%; display: block; overflow: visible; transition: filter .3s ease; }
+.counter.done svg { filter: drop-shadow(0 0 7px var(--glow)); }
+.counter { --tw: 7; --tw2: 15; }
+.counter.t10 { --tw: 11; --tw2: 21; }
+.tick { stroke: var(--line); stroke-width: var(--tw); stroke-linecap: round; transition: stroke .2s ease; }
+.tick.on { stroke: var(--accent); }
+.tick.cur { animation: tickpulse .45s ease-out; }
+@keyframes tickpulse { 0% { stroke-width: var(--tw2); opacity: .5; } 100% { stroke-width: var(--tw); opacity: 1; } }
+.num {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  line-height: 1;
+}
+.num b {
+  font-size: clamp(46px, 15vw, 68px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.num b.pop { animation: pop .34s cubic-bezier(.2, .9, .3, 1.35); }
+@keyframes pop { 0% { transform: scale(.65); opacity: .25; } 100% { transform: scale(1); opacity: 1; } }
+.num small { margin-top: 6px; font-size: 14px; color: var(--muted); letter-spacing: .02em; }
+.counter.zero .num b { color: var(--muted); font-weight: 500; }
+.counter.done .num b { color: var(--accent); }
+@media (prefers-reduced-motion: reduce) {
+  .tick.cur, .num b.pop { animation: none; }
+}
+.category { margin: 0; color: var(--muted); font-size: 17px; }
+.category b { color: var(--ink); font-weight: 600; }
+.lead { margin: 0; color: var(--muted); font-size: 17px; line-height: 1.4; }
+
+.actions {
+  position: fixed;
+  left: 0; right: 0;
+  margin: 0 auto;
+  max-width: 760px;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  padding: 0 16px;
+  display: flex;
+  gap: 8px;
+}
+.actions button {
+  height: 64px;
+  border-radius: 20px;
+  font: inherit;
+  cursor: pointer;
+}
+.btn2 {
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 16px;
+}
+.fwd {
+  flex: 1;
+  min-width: 120px;
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 21px;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(0,0,0,.28);
+}
+.fwd:active { transform: scale(.97); }
+.btn2:active { transform: scale(.97); }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.hint { color: var(--muted); font-size: 14px; margin: 0; }
+
+.sheet {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: none;
+  flex-direction: column;
+  z-index: 10;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.sheet.open { display: flex; }
+.sheet-inner { max-width: 760px; width: 100%; margin: 0 auto; padding: 0 20px 40px; overflow-y: auto; flex: 1; }
+.sheet h2 { font-family: "Literata", Georgia, serif; font-weight: 500; font-size: 26px; margin: 18px 0 14px; }
+.sheet .bar { display: flex; justify-content: flex-end; padding: 14px 20px 0; max-width: 760px; width: 100%; margin: 0 auto; }
+.bar button, .btn {
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 12px;
+  font: inherit; font-size: 16px; padding: 12px 18px; cursor: pointer;
+}
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0 18px; }
+.list { list-style: none; margin: 0; padding: 0; }
+.list li button {
+  width: 100%; text-align: left; background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 8px;
+  font: inherit; font-size: 17px; display: flex; justify-content: space-between; gap: 12px; cursor: pointer;
+}
+.list li button span { color: var(--muted); font-size: 14px; white-space: nowrap; }
+.list li button.cur { border-color: var(--accent); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin: 6px 0 10px; }
+.seg button { background: var(--surface); color: var(--ink); border: 0; font: inherit; font-size: 20px; font-weight: 600; padding: 14px 40px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button.sel { background: var(--accent); color: var(--accent-ink); }
+.note { color: var(--muted); font-size: 14px; line-height: 1.5; }
+.status { margin: 8px 0; font-size: 15px; color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <span id="counterTop"></span>
+    <div style="display:flex;gap:8px">
+      <button id="btnMenu" type="button">Категории</button>
+      <button id="btnSettings" type="button">Настройки</button>
+    </div>
+  </div>
+  <div class="progress"><i id="bar"></i></div>
+  <main id="stage" aria-live="polite"></main>
+</div>
+
+<div class="actions">
+  <button class="btn2" id="btnBack" type="button">Назад</button>
+  <button class="btn2" id="btnSkip" type="button">Далее</button>
+  <button class="fwd" id="btnFwd" type="button">Вперёд</button>
+</div>
+
+<div class="sheet" id="menuSheet" role="dialog" aria-label="Категории">
+  <div class="bar"><button type="button" data-close>Закрыть</button></div>
+  <div class="sheet-inner">
+    <h2>Категории</h2>
+    <ul class="list" id="catList"></ul>
+  </div>
+</div>
+
+<div class="sheet" id="setSheet" role="dialog" aria-label="Настройки">
+  <div class="bar"><button type="button" data-close>Закрыть</button></div>
+  <div class="sheet-inner">
+    <h2>Повторов на полярность</h2>
+    <div class="seg" id="seg">
+      <button type="button" data-t="10">10</button>
+      <button type="button" data-t="20">20</button>
+    </div>
+    <p class="note">После последнего повторения откроется следующая полярность. Кнопка «Далее» переходит к ней раньше.</p>
+
+    <h2>Загрузить список</h2>
+    <p class="note">Выберите .txt файл. Название категории пишется в квадратных скобках на отдельной строке, например [Древние полярности], дальше идут полярности по одной в строке.</p>
+    <div class="row">
+      <button class="btn primary" id="btnPick" type="button">Выбрать файл</button>
+    </div>
+    <input type="file" id="filePick" accept=".txt,text/plain" hidden>
+    <div class="status" id="loadStatus"></div>
+
+    <h2>Прогресс</h2>
+    <div class="row">
+      <button class="btn" id="btnRestart" type="button">Начать с первой полярности</button>
+      <button class="btn" id="btnBuiltin" type="button">Вернуть встроенные списки</button>
+      <button class="btn" id="btnTheme" type="button">Тема: тёмная</button>
+    </div>
+    <p class="note" id="info"></p>
+  </div>
+</div>
+
+<script>
+var DEFAULT_LISTS = [{"name": "Актуальные полярности", "items": ["Ответственность — Безответственность", "Моё желание — Чужое желание", "Способность (сделать что-либо) — Неспособность", "Энтузиазм — Лень", "Тревога — Спокойствие", "Лидер — Исполнитель", "Решение сделать — Откладывание дел", "Я должен быть прав — Я не должен быть прав", "Другие правы — Я прав", "Я должен — Я хочу", "Я хочу курить — Я не хочу курить", "Стремиться к цели — Отступать от цели", "Терпимость — Нетерпимость", "Я — Моя супруга", "Я — Мой босс", "Я — Мой ребенок", "Я — Другой человек", "Мужчина — Женщина", "Мой отец — Моя мать"]}, {"name": "Фундаментальные полярности", "items": ["Конечность — Бесконечность", "Появление — Исчезновение", "Определённость — Неопределенность", "Часть — Целое", "Влечение — Отталкивание", "Любовь — Ненависть", "Выжить — Умереть", "Желание контролировать других — Желание, чтобы меня контролировали", "Стремление к безопасности — Стремление к смерти", "Желание отделиться — Желание объединиться", "Желание одобрения другими людьми — Желание одобрять других людей", "Потребность быть любимым — Потребность любить"]}, {"name": "Древние полярности", "items": ["Небеса — Земля", "Солнце — Луна", "Свет и темнота", "Положительный — Отрицательный", "Огонь — Вода", "Речь — Дхарма", "Подтверждение — Отрицание", "Важно — Неважно", "Форма — Бесформенность", "Вопрос — Пустота", "Движение — Остановка", "Чистый — Грязный", "Обычные люди — Мудрецы", "Глупые люди — Мудрые люди", "Старый — Молодой", "Много — Мало", "Длинный — Короткий", "Хороший — Плохой", "Самодовольный и просвещенный", "Потревоженность — Спокойствие", "Честный — Жулик", "Полный — Пустой", "Пологий — Крутой", "Тело — Разум", "Постоянный — Непостоянный", "Добрый — Жестокий", "Счастливый — Сердитый", "Щедрый — Скупой", "Продвижение — Отступление", "Существование — Несуществование"]}, {"name": "Полезные", "items": ["Любовь и страх", "Любовь и свобода", "Любовь и боль", "Любовь и власть", "Любовь и одиночество", "Большой и малый", "Светлый и темный", "Хороший и плохой", "Мужчина и женщина", "Ограниченное и неограниченное", "\"Я\" и \"не-я\"", "Видимое и невидимое", "Существующее и вымышленное", "Появляющееся и исчезающее", "Движение и неподвижность", "Материя и энергия", "Материя и пустота", "Воплощённый мир и невоплощённый мир (существующее и придуманное)", "Точка и объём", "Точка и пространство", "Целое и его части", "Внутренний мир и внешний мир", "Постоянство и мимолетность", "Настоящее и вечность", "Настоящее и прошлое", "Настоящее и будущее", "Начало и конец", "Наконец и навсегда", "Продвижение и отступление", "Победа и поражение", "Изобилие и нищета", "Давать и получать", "\"Я\" и жизнь", "\"Я\" и другие", "Единство с другими и изоляция", "Радость и печаль", "Жизнь и смерть", "Мир и волнения", "Причина и следствие", "Господство и смирение", "Притяжение и отталкивание", "Создание и уничтожение", "Расширение и сокращение", "Свобода и судьба (карма)", "Все и ничто", "Свёртывание и распад", "Звук и тишина", "Собираться и делать", "Забыть что-то и вспомнить что-то", "Удовлетворенность и неудовлетворенность", "Я есть и меня нет", "Единство и двойственность", "Эмоции и разум", "Страсть и духовность", "Свобода и не-свобода", "Свобода и рабство", "Активный и пассивный", "Сознание и бессознательность", "Ограниченное сознание и неограниченное сознание", "Сознание и материя", "Материальный и духовный", "Бесконечно малое и бесконечно большое", "Мир и страх", "Безопасность и небезопасность", "Земной и неземной", "Это мир, и другой мир", "Материальная вселенная и духовная вселенная", "Входить в процесс и выходить из процесса", "Тело и сознание", "Что-то и ничто", "Правда и неправда", "Зависимость и независимость", "Знание и невежество", "Сила и слабость", "Хороший \"Я\" и плохой \"Я\"", "Радость и грусть", "Контроль и свобода", "Творение и существование", "Принимать и отвергать", "\"Я\" и пустота", "Любовь и неприятие", "Продолжать и останавливаться", "Свобода и ограничение", "Любовь и агрессия", "Сознательное и инстинкты", "Величие и неважность", "Видимость и невидимость", "Я и другой", "Существование и несуществование", "Свет и тьма", "Любовь и потеря", "Свобода и несвобода", "Свобода и ответственность", "Сознательное и бессознательное", "Материальное и сознательное", "Материальное и духовное", "Бесконечно малый и бесконечно большой", "Сила и бессилие", "Страх и покой", "Расширение и сжатие", "Все и ничего", "Земной и внеземной", "Этот мир и другой мир", "Вхождение в опыт и выход из опыта", "Божественное и материальное", "Внутри и снаружи", "Правда и неправда (Истина и ложь)", "Наступление и отступление", "Счастье и печаль", "Бытие и сотворение", "Принятие и неприятие", "Я и ничто", "Единение и разделение", "Движение и остановка", "Изучение и знание", "Я и все", "Расслабление и напряжение", "Спокойствие и контроль", "Идеальность и неидеальность"]}];
+
+var TARGET = 20;   // число повторений на полярность: 10 или 20
+var KEY = "polaritytrainer.v1";
+var state = { lists: DEFAULT_LISTS, pos: 0, count: 0, theme: "dark", src: "builtin" };
+var flat = [];
+var timer = null;
+
+function save() {
+  try {
+    var s = { lists: state.lists, pos: state.pos, count: state.count, theme: state.theme, src: state.src, target: TARGET };
+    if (s.count >= TARGET) { s.pos = s.pos + 1; s.count = 0; }
+    localStorage.setItem(KEY, JSON.stringify(s));
+  } catch (e) {}
+}
+function load() {
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (!raw) return;
+    var s = JSON.parse(raw);
+    if (!s) return;
+    if (s.src === "custom" && s.lists && s.lists.length) { state.lists = s.lists; state.src = "custom"; }
+    state.pos = s.pos || 0;
+    state.count = s.count || 0;
+    state.theme = s.theme || "dark";
+    if (s.target === 10 || s.target === 20) TARGET = s.target;
+  } catch (e) {}
+}
+function build() {
+  flat = [];
+  state.lists.forEach(function (l, li) {
+    l.items.forEach(function (q, qi) { flat.push({ li: li, qi: qi, q: q }); });
+  });
+  if (state.pos >= flat.length || state.pos < 0) { state.pos = 0; state.count = 0; }
+  if (state.count >= TARGET || state.count < 0) state.count = 0;
+}
+
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+var stage = document.getElementById("stage");
+
+function polarityHTML(q) {
+  var i = q.indexOf(" — ");
+  if (i < 0) return esc(q);
+  return esc(q.slice(0, i)) + '<span class="sep"> — </span>' + esc(q.slice(i + 3));
+}
+
+function counterHTML(c, animate) {
+  var t = "";
+  for (var i = 0; i < TARGET; i++) {
+    var a = (-90 + i * (360 / TARGET)) * Math.PI / 180;
+    var x1 = (100 + 77 * Math.cos(a)).toFixed(2), y1 = (100 + 77 * Math.sin(a)).toFixed(2);
+    var x2 = (100 + 94 * Math.cos(a)).toFixed(2), y2 = (100 + 94 * Math.sin(a)).toFixed(2);
+    var cls = "tick" + (i < c ? " on" : "") + (animate && i === c - 1 ? " cur" : "");
+    t += '<line class="' + cls + '" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '"/>';
+  }
+  return '<svg viewBox="0 0 200 200" aria-hidden="true">' + t + '</svg>' +
+    '<div class="num"><b' + (animate ? ' class="pop"' : '') + '>' + c + '</b><small>' + (c >= TARGET ? 'готово' : 'из ' + TARGET) + '</small></div>';
+}
+function renderCounter(animate) {
+  var el = document.getElementById("counterBox");
+  if (!el) return;
+  var c = state.count;
+  el.className = "counter" + (TARGET === 10 ? " t10" : "") + (c === 0 ? " zero" : "") + (c >= TARGET ? " done" : "");
+  el.setAttribute("role", "img");
+  el.setAttribute("aria-label", "Повторение " + c + " из " + TARGET);
+  el.innerHTML = counterHTML(c, animate);
+}
+
+function setButtons(finish) {
+  document.getElementById("btnSkip").style.display = finish ? "none" : "";
+  document.getElementById("btnBack").style.visibility = (finish || state.pos > 0 || state.count > 0) ? "visible" : "hidden";
+  document.getElementById("btnFwd").textContent = finish ? "Заново" : "Вперёд";
+}
+
+function render() {
+  if (!flat.length) {
+    stage.innerHTML = '<p class="polarity">Нет полярностей</p><p class="hint">Откройте «Настройки» и загрузите .txt файл.</p>';
+    document.getElementById("counterTop").textContent = "";
+    return;
+  }
+  if (state.pos >= flat.length) { renderFinish(); return; }
+  var it = flat[state.pos];
+  var list = state.lists[it.li];
+  stage.innerHTML =
+    '<h1 class="polarity">' + polarityHTML(it.q) + '</h1>' +
+    '<div id="counterBox"></div>' +
+    '<p class="category">Категория: <b>' + esc(list.name) + '</b></p>';
+  renderCounter(false);
+  document.getElementById("counterTop").innerHTML =
+    '<span>' + (it.qi + 1) + ' из ' + list.items.length + '</span> &nbsp;(Всего ' + (state.pos + 1) + ' из ' + flat.length + ')';
+  document.getElementById("bar").style.width = ((state.pos + 1) / flat.length * 100) + "%";
+  setButtons(false);
+  stage.scrollTop = 0;
+}
+
+function renderFinish() {
+  stage.innerHTML = '<h1 class="polarity">Круг пройден</h1><p class="lead">Вы прошли все ' + flat.length + ' полярностей.</p>';
+  document.getElementById("counterTop").textContent = flat.length + " из " + flat.length;
+  document.getElementById("bar").style.width = "100%";
+  setButtons(true);
+}
+
+function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+function buzz() { try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {} }
+
+function forward() {
+  if (!flat.length) return;
+  if (state.pos >= flat.length) { state.pos = 0; state.count = 0; save(); render(); return; }
+  if (timer) return;                 // идёт показ «20», ждём перехода
+  state.count++;
+  buzz();
+  renderCounter(true);
+  document.getElementById("btnBack").style.visibility = "visible";
+  save();
+  if (state.count >= TARGET) {
+    timer = setTimeout(function () {
+      timer = null;
+      state.pos++; state.count = 0;
+      save(); render();
+    }, 800);
+  }
+}
+function skip() {
+  if (!flat.length || state.pos >= flat.length) return;
+  clearTimer();
+  state.pos++; state.count = 0;
+  save(); render();
+}
+function back() {
+  if (!flat.length) return;
+  clearTimer();
+  if (state.pos >= flat.length) state.pos = flat.length - 1;
+  else if (state.pos > 0) state.pos--;
+  state.count = 0;
+  save(); render();
+}
+document.getElementById("btnFwd").addEventListener("click", forward);
+document.getElementById("btnSkip").addEventListener("click", skip);
+document.getElementById("btnBack").addEventListener("click", back);
+document.addEventListener("keydown", function (e) {
+  if (document.querySelector(".sheet.open")) return;
+  if (e.key === "ArrowRight" || e.key === " " || e.key === "Enter") { e.preventDefault(); forward(); }
+  if (e.key === "ArrowDown") { e.preventDefault(); skip(); }
+  if (e.key === "ArrowLeft") { e.preventDefault(); back(); }
+});
+
+/* панели */
+function openSheet(id) { document.getElementById(id).classList.add("open"); }
+function closeSheets() { document.querySelectorAll(".sheet").forEach(function (s) { s.classList.remove("open"); }); }
+document.querySelectorAll("[data-close]").forEach(function (b) { b.addEventListener("click", closeSheets); });
+
+function renderMenu() {
+  var ul = document.getElementById("catList");
+  ul.innerHTML = "";
+  var start = 0;
+  state.lists.forEach(function (l) {
+    var li = document.createElement("li");
+    var b = document.createElement("button");
+    b.type = "button";
+    if (state.pos >= start && state.pos < start + l.items.length) b.className = "cur";
+    b.innerHTML = '<div>' + esc(l.name) + '</div><span>' + l.items.length + '</span>';
+    (function (s) {
+      b.addEventListener("click", function () { clearTimer(); state.pos = s; state.count = 0; save(); closeSheets(); render(); });
+    })(start);
+    li.appendChild(b); ul.appendChild(li);
+    start += l.items.length;
+  });
+}
+document.getElementById("btnMenu").addEventListener("click", function () { renderMenu(); openSheet("menuSheet"); });
+function updateInfo() {
+  document.getElementById("info").textContent = "Загружено категорий: " + state.lists.length + ", полярностей: " + flat.length + ".";
+}
+document.getElementById("btnSettings").addEventListener("click", function () { updateInfo(); openSheet("setSheet"); });
+document.getElementById("btnRestart").addEventListener("click", function () {
+  clearTimer(); state.pos = 0; state.count = 0; save(); closeSheets(); render();
+});
+document.getElementById("btnBuiltin").addEventListener("click", function () {
+  clearTimer(); state.lists = DEFAULT_LISTS; state.src = "builtin"; state.pos = 0; state.count = 0;
+  save(); build(); closeSheets(); render();
+});
+
+function syncSeg() {
+  document.querySelectorAll("#seg button").forEach(function (b) {
+    b.className = (parseInt(b.getAttribute("data-t"), 10) === TARGET) ? "sel" : "";
+  });
+}
+function setTarget(t) {
+  if (t === TARGET) return;
+  var pending = !!timer;
+  clearTimer();
+  TARGET = t;
+  if (pending) { state.pos++; state.count = 0; }
+  else if (state.count >= TARGET) state.count = TARGET - 1;
+  syncSeg(); save(); render();
+}
+document.querySelectorAll("#seg button").forEach(function (b) {
+  b.addEventListener("click", function () { setTarget(parseInt(b.getAttribute("data-t"), 10)); });
+});
+
+function applyTheme() {
+  var r = document.documentElement;
+  if (state.theme === "auto") r.removeAttribute("data-theme"); else r.setAttribute("data-theme", state.theme);
+  document.getElementById("btnTheme").textContent = "Тема: " + ({auto:"авто", light:"светлая", dark:"тёмная"})[state.theme];
+}
+document.getElementById("btnTheme").addEventListener("click", function () {
+  state.theme = state.theme === "dark" ? "light" : state.theme === "light" ? "auto" : "dark";
+  applyTheme(); save();
+});
+
+/* загрузка своего файла */
+function decode(buf) {
+  try { return new TextDecoder("utf-8", { fatal: true }).decode(buf); }
+  catch (e) { return new TextDecoder("windows-1251").decode(buf); }
+}
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+function cleanItem(s) {
+  s = s.replace(/\s+[“”]\s+/g, " - ").replace(/\s+/g, " ").replace(/\.$/, "").trim();
+  var i = s.indexOf(" - ");
+  if (i > 0) return cap(s.slice(0, i).trim()) + " — " + cap(s.slice(i + 3).trim());
+  return cap(s);
+}
+function normKey(s) {
+  var n = function (x) { return x.toLowerCase().replace(/ё/g, "е").replace(/[^a-zа-я0-9]+/g, " ").trim(); };
+  var p = s.split(/ — | и /);
+  if (p.length === 2) { var a = n(p[0]), b = n(p[1]); return a < b ? a + "|" + b : b + "|" + a; }
+  return n(s);
+}
+var lastDupes = 0;
+function parsePolarities(text) {
+  var lists = [], cur = null;
+  lastDupes = 0;
+  text.replace(/^\uFEFF/, "").split(/\r?\n/).forEach(function (raw) {
+    var s = raw.trim();
+    if (!s) return;
+    var m = s.match(/^\[(.+)\]$/);
+    if (m) { cur = { name: m[1].trim(), items: [] }; lists.push(cur); return; }
+    if (/^\d+$/.test(s)) return;
+    if (!cur) { cur = { name: "Полярности", items: [] }; lists.push(cur); }
+    cur.items.push(cleanItem(s));
+  });
+  lists.forEach(function (l) {
+    var seen = {};
+    l.items = l.items.filter(function (q) {
+      var k = normKey(q);
+      if (seen[k]) { lastDupes++; return false; }
+      seen[k] = 1; return true;
+    });
+  });
+  return lists.filter(function (l) { return l.items.length; });
+}
+var filePick = document.getElementById("filePick");
+document.getElementById("btnPick").addEventListener("click", function () { filePick.click(); });
+filePick.addEventListener("change", function () {
+  var f = filePick.files[0];
+  var status = document.getElementById("loadStatus");
+  if (!f) return;
+  var r = new FileReader();
+  r.onload = function () {
+    var lists = parsePolarities(decode(r.result));
+    if (!lists.length) { status.textContent = "В файле не нашлось полярностей."; return; }
+    clearTimer();
+    state.lists = lists; state.src = "custom"; state.pos = 0; state.count = 0;
+    save(); build(); render(); updateInfo();
+    status.textContent = "Готово: категорий — " + lists.length + ", полярностей — " + flat.length + (lastDupes ? ", повторов убрано — " + lastDupes : "") + ".";
+  };
+  r.onerror = function () { status.textContent = "Не удалось прочитать файл."; };
+  r.readAsArrayBuffer(f);
+  filePick.value = "";
+});
+
+load(); build(); applyTheme(); syncSeg(); render();
+</script>
+</body>
+</html>
